@@ -6,6 +6,9 @@ struct SettingsView: View {
     @State private var dateOfBirth: Date = AppSettings.shared.dateOfBirth ?? Calendar.current.date(byAdding: .year, value: -30, to: Date())!
     @State private var hasDateOfBirth: Bool = AppSettings.shared.dateOfBirth != nil
     @State private var lifeExpectancy: Int = AppSettings.shared.lifeExpectancy
+    @State private var showMonth: Bool = AppSettings.shared.isDisplayed(.month)
+    @State private var showYear: Bool = AppSettings.shared.isDisplayed(.year)
+    @State private var showLife: Bool = AppSettings.shared.isDisplayed(.life)
 
     var body: some View {
         Form {
@@ -44,6 +47,21 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Menu Bar Display") {
+                Toggle("Month", isOn: $showMonth)
+                    .onChange(of: showMonth) { _, _ in
+                        settings.toggleDisplay(.month)
+                    }
+                Toggle("Year", isOn: $showYear)
+                    .onChange(of: showYear) { _, _ in
+                        settings.toggleDisplay(.year)
+                    }
+                Toggle("Life", isOn: $showLife)
+                    .onChange(of: showLife) { _, _ in
+                        settings.toggleDisplay(.life)
+                    }
+            }
+
             Section("Appearance") {
                 Picker("Theme", selection: $selectedTheme) {
                     Text("Dark").tag("dark")
@@ -61,7 +79,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 400, height: 420)
+        .frame(width: 400, height: 520)
     }
 }
 

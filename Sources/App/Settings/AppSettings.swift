@@ -11,6 +11,7 @@ public final class AppSettings {
         static let themeMode = "tempus_theme_mode"
         static let dateOfBirth = "tempus_date_of_birth"
         static let lifeExpectancy = "tempus_life_expectancy"
+        static let menuBarDisplayTypes = "tempus_menu_bar_display_types"
     }
 
     public var themeMode: String {
@@ -31,6 +32,24 @@ public final class AppSettings {
         }
     }
 
+    public var menuBarDisplayTypes: Set<String> {
+        didSet {
+            defaults.set(Array(menuBarDisplayTypes), forKey: Keys.menuBarDisplayTypes)
+        }
+    }
+
+    public func isDisplayed(_ type: ProgressType) -> Bool {
+        menuBarDisplayTypes.contains(type.rawValue)
+    }
+
+    public func toggleDisplay(_ type: ProgressType) {
+        if menuBarDisplayTypes.contains(type.rawValue) {
+            menuBarDisplayTypes.remove(type.rawValue)
+        } else {
+            menuBarDisplayTypes.insert(type.rawValue)
+        }
+    }
+
     public var onSettingsChanged: (() -> Void)?
 
     private init() {
@@ -38,5 +57,11 @@ public final class AppSettings {
         dateOfBirth = defaults.object(forKey: Keys.dateOfBirth) as? Date
         let storedExpectancy = defaults.integer(forKey: Keys.lifeExpectancy)
         lifeExpectancy = storedExpectancy > 0 ? storedExpectancy : 80
+
+        if let storedTypes = defaults.array(forKey: Keys.menuBarDisplayTypes) as? [String] {
+            menuBarDisplayTypes = Set(storedTypes)
+        } else {
+            menuBarDisplayTypes = [ProgressType.life.rawValue]
+        }
     }
 }

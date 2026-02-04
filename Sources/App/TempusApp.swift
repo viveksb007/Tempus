@@ -23,7 +23,7 @@ struct TempusApp: App {
             MenuContentView(monitor: monitor)
                 .appThemeProvider(themeModeId: settings.themeMode)
         } label: {
-            StatusBarIcon(lifePercentage: monitor.progresses.last?.percentage)
+            StatusBarIcon(progresses: monitor.progresses, displayTypes: settings.menuBarDisplayTypes)
         }
         .menuBarExtraStyle(.window)
 
