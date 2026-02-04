@@ -75,7 +75,9 @@ struct SettingsView: View {
 
             Section("About") {
                 LabeledContent("Version", value: "1.0.0")
-                LabeledContent("Author", value: "viveksb.dev")
+                LabeledContent("Author") {
+                    Link("viveksb.dev", destination: URL(string: "https://viveksb.dev")!)
+                }
             }
         }
         .formStyle(.grouped)
