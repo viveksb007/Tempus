@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  push:
+    branches: [main, mainline]
+  pull_request:
+    branches: [main, mainline]
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build
+        run: |
+          xcodebuild -project Tempus.xcodeproj \
+            -scheme Tempus \
+            -configuration Release \
+            -destination 'platform=macOS' \
+            build
+
+      - name: Archive Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tempus.app
+          path: ~/Library/Developer/Xcode/DerivedData/**/Build/Products/Release/Tempus.app
+          if-no-files-found: ignore

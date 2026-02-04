@@ -2,6 +2,7 @@
 
 A macOS menu bar app that displays the progress of your Month, Year, and Life as percentages.
 
+[![Build](https://github.com/viveksb007/Tempus/actions/workflows/build.yml/badge.svg)](https://github.com/viveksb007/Tempus/actions/workflows/build.yml)
 ![macOS](https://img.shields.io/badge/macOS-15.0%2B-blue)
 ![Swift](https://img.shields.io/badge/Swift-6.0-orange)
 
@@ -27,7 +28,7 @@ The app appears in your menu bar showing your life progress percentage. Click to
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Tempus.git
+   git clone https://github.com/viveksb007/Tempus.git
    cd Tempus
    ```
 
