@@ -1,0 +1,118 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Build
+        run: |
+          xcodebuild -project Tempus.xcodeproj \
+            -scheme Tempus \
+            -configuration Release \
+            -derivedDataPath build \
+            -destination 'platform=macOS' \
+            build
+
+      - name: Create Archive
+        run: |
+          cd build/Build/Products/Release
+          zip -r Tempus.zip Tempus.app
+          mv Tempus.zip $GITHUB_WORKSPACE/
+
+      - name: Calculate SHA256
+        id: sha256
+        run: |
+          SHA=$(shasum -a 256 Tempus.zip | awk '{print $1}')
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Tempus.zip
+          body: |
+            ## Installation
+
+            ### Via Homebrew
+            ```bash
+            brew tap viveksb007/tap
+            brew install tempus
+            ```
+
+            ### Manual Installation
+            1. Download `Tempus.zip`
+            2. Extract and move `Tempus.app` to `/Applications`
+
+            **SHA256:** `${{ steps.sha256.outputs.sha256 }}`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew Formula
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          SHA256=${{ steps.sha256.outputs.sha256 }}
+
+          git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/viveksb007/homebrew-tap.git
+          cd homebrew-tap
+
+          cat > Formula/tempus.rb << 'FORMULA'
+          class Tempus < Formula
+            desc "macOS menu bar app showing Month, Year, and Life progress as percentages"
+            homepage "https://github.com/viveksb007/Tempus"
+            url "https://github.com/viveksb007/Tempus/releases/download/v${VERSION}/Tempus.zip"
+            sha256 "${SHA256}"
+            version "${VERSION}"
+            license "MIT"
+
+            depends_on :macos
+
+            def install
+              prefix.install "Tempus.app"
+            end
+
+            def caveats
+              <<~EOS
+                Tempus.app has been installed to:
+                  #{prefix}/Tempus.app
+
+                To start Tempus, run:
+                  open #{prefix}/Tempus.app
+
+                Or move it to /Applications:
+                  cp -r #{prefix}/Tempus.app /Applications/
+              EOS
+            end
+
+            test do
+              assert_predicate prefix/"Tempus.app", :exist?
+            end
+          end
+          FORMULA
+
+          # Replace placeholders
+          sed -i '' "s/\${VERSION}/${VERSION}/g" Formula/tempus.rb
+          sed -i '' "s/\${SHA256}/${SHA256}/g" Formula/tempus.rb
+
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Formula/tempus.rb
+          git commit -m "Update tempus to v${VERSION}"
+          git push
