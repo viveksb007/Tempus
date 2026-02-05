@@ -52,7 +52,7 @@ jobs:
             ### Via Homebrew
             ```bash
             brew tap viveksb007/tap
-            brew install tempus
+            brew install --cask tempus
             ```
 
             ### Manual Installation
@@ -63,7 +63,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update Homebrew Formula
+      - name: Update Homebrew Cask
         env:
           HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
@@ -73,46 +73,28 @@ jobs:
           git clone https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/viveksb007/homebrew-tap.git
           cd homebrew-tap
 
-          cat > Formula/tempus.rb << 'FORMULA'
-          class Tempus < Formula
+          mkdir -p Casks
+
+          cat > Casks/tempus.rb << CASK
+          cask "tempus" do
+            version "${VERSION}"
+            sha256 "${SHA256}"
+
+            url "https://github.com/viveksb007/Tempus/releases/download/v${VERSION}/Tempus.zip"
+            name "Tempus"
             desc "macOS menu bar app showing Month, Year, and Life progress as percentages"
             homepage "https://github.com/viveksb007/Tempus"
-            url "https://github.com/viveksb007/Tempus/releases/download/v${VERSION}/Tempus.zip"
-            sha256 "${SHA256}"
-            version "${VERSION}"
-            license "MIT"
 
-            depends_on :macos
+            app "Tempus.app"
 
-            def install
-              prefix.install "Tempus.app"
-            end
-
-            def caveats
-              <<~EOS
-                Tempus.app has been installed to:
-                  #{prefix}/Tempus.app
-
-                To start Tempus, run:
-                  open #{prefix}/Tempus.app
-
-                Or move it to /Applications:
-                  cp -r #{prefix}/Tempus.app /Applications/
-              EOS
-            end
-
-            test do
-              assert_predicate prefix/"Tempus.app", :exist?
-            end
+            zap trash: [
+              "~/Library/Preferences/com.tempus.app.plist",
+            ]
           end
-          FORMULA
-
-          # Replace placeholders
-          sed -i '' "s/\${VERSION}/${VERSION}/g" Formula/tempus.rb
-          sed -i '' "s/\${SHA256}/${SHA256}/g" Formula/tempus.rb
+          CASK
 
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add Formula/tempus.rb
-          git commit -m "Update tempus to v${VERSION}"
+          git add Casks/tempus.rb
+          git commit -m "Update tempus cask to v${VERSION}"
           git push

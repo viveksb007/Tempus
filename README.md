@@ -26,6 +26,17 @@ The app appears in your menu bar showing your life progress percentage. Click to
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap viveksb007/tap
+brew install --cask tempus
+```
+
+The app will be installed to `/Applications/Tempus.app`.
+
+### Build from Source
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/viveksb007/Tempus.git
